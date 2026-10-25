@@ -1,0 +1,15 @@
+services:
+  radar:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATA_DIR: /data
+    volumes:
+      - radar-data:/data
+
+volumes:
+  radar-data:
