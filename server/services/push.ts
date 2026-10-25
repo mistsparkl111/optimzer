@@ -1,6 +1,6 @@
 import webpush from 'web-push';
 import { db } from '../db';
-import { ADMIN_EMAIL, PUBLIC_URL } from '../env';
+import { PUBLIC_URL, VAPID_SUBJECT } from '../env';
 import { getSetting, setSetting } from '../settings';
 import { MIN, parseJson } from '../util';
 import type { ThreatType } from '../../shared/constants';
@@ -38,7 +38,7 @@ export function initPush() {
     v = setSetting('vapid', {
       publicKey: keys.publicKey,
       privateKey: keys.privateKey,
-      subject: ADMIN_EMAIL ? `mailto:${ADMIN_EMAIL}` : PUBLIC_URL.startsWith('https://') ? PUBLIC_URL : 'mailto:admin@radar.local',
+      subject: VAPID_SUBJECT || (PUBLIC_URL.startsWith('https://') ? PUBLIC_URL : 'mailto:admin@radar.local'),
     });
   }
   webpush.setVapidDetails(v.subject || 'mailto:admin@radar.local', v.publicKey, v.privateKey);

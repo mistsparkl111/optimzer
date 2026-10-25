@@ -3,8 +3,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export const ROOT = process.cwd();
+
+// .env is loaded without extra dependencies; variables already set in the environment win.
+const envFile = path.join(ROOT, '.env');
+if (fs.existsSync(envFile)) {
+  try {
+    process.loadEnvFile(envFile);
+  } catch (e) {
+    console.warn('[env] не удалось прочитать .env:', (e as Error).message);
+  }
+}
+
 export const isProd = process.env.NODE_ENV === 'production';
-export const PORT = Number(process.env.PORT || 8787);
+// In dev, hosting/preview platforms assign PORT to the web (Vite) server, so the API uses its own API_PORT.
+export const PORT = Number(process.env.API_PORT || (isProd ? process.env.PORT : '') || 8787);
 export const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(ROOT, 'data'));
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
@@ -20,8 +32,8 @@ function loadSecret(): string {
 
 export const APP_SECRET = loadSecret();
 export const PUBLIC_URL = (process.env.PUBLIC_URL || (isProd ? `http://localhost:${PORT}` : 'http://localhost:5173')).replace(/\/$/, '');
-export const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim().toLowerCase() || '';
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+/** Contact for Web Push (VAPID): mailto:… or https://… */
+export const VAPID_SUBJECT = process.env.VAPID_SUBJECT?.trim() || '';
 export const DEMO_PAYMENTS = process.env.DEMO_PAYMENTS ? process.env.DEMO_PAYMENTS === '1' : !isProd;
 
 export const WEB_DIST = path.join(ROOT, 'dist', 'web');

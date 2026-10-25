@@ -4,6 +4,7 @@ import { db, type UserRow } from './db';
 import { isProd } from './env';
 import { randomToken, sha256 } from './crypto';
 import { DAY, fail } from './util';
+import { effectiveRole } from './users';
 
 export type AppEnv = { Variables: { user: UserRow | null } };
 
@@ -47,6 +48,8 @@ export const loadUser: MiddlewareHandler<AppEnv> = async (c, next) => {
         )
         .get(sha256(token), Date.now()) as UserRow | undefined) || null;
     if (user?.banned) user = null;
+    // Role is derived from the nickname on every request, whatever is stored in the DB.
+    if (user) user = { ...user, role: effectiveRole(user) };
   }
   c.set('user', user);
   await next();

@@ -189,6 +189,11 @@ const MIGRATIONS: string[] = [
   );
   CREATE INDEX payments_user ON payments(user_id, created_at);
   `,
+  /* 2: unique nicknames (the "leader" nickname grants admin, so it must never be shared) */ `
+  UPDATE users SET name = name || ' #' || id
+    WHERE id NOT IN (SELECT MIN(id) FROM users GROUP BY name COLLATE NOCASE);
+  CREATE UNIQUE INDEX users_name_nocase ON users(name COLLATE NOCASE);
+  `,
 ];
 
 export function migrate() {
